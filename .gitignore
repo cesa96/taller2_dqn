@@ -1,0 +1,11 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.DS_Store
+
+results/*.csv
+!results/method_calls.csv
+results/*.pt
+results/*.png
+results/*.gif
