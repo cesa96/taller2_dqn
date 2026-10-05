@@ -1,7 +1,7 @@
-
 import gymnasium as gym
 import numpy as np
 env = gym.make("LunarLander-v3")
+
 print("=" * 60)
 print("INFORMACIÓN DEL ENTORNO")
 print("=" * 60)
@@ -61,6 +61,12 @@ for nombre, valor in zip(variables_estado, obs):
     print(f"{nombre}: {valor:.4f}")
 
 env.close()
+
+
+"""
+
+
+
 ## Tabla de observaciones
 
 | Variable | Significado | Rango aproximado | Tipo |
@@ -84,23 +90,7 @@ env.close()
 
 3	Motor lateral derecho
 
-env = gym.make("LunarLander-v3", render_mode="rgb_array")
-observation, info = env.reset()
 
-for step in range(20):
-    action = env.action_space.sample()
-    observation, reward, terminated, truncated, info = env.step(action)
-
-    print("Paso:", step)
-    print("Acción:", action)
-    print("Observación:", observation)
-    print("Recompensa:", reward)
-    print("-" * 30)
-
-    if terminated or truncated:
-        observation, info = env.reset()
-
-env.close()
 ## Sistema de Recompensas
 
 El entorno LunarLander utiliza una función de recompensa diseñada para incentivar aterrizajes seguros, estables y eficientes en el consumo de combustible. 
@@ -141,34 +131,7 @@ La política óptima debe:
 
 La recompensa funciona como una guía que le dice al agente qué acciones lo acercan a un aterrizaje correcto y cuáles lo alejan de él.
 Las recompensas positivas refuerzan comportamientos seguros y controlados (rutas que puede repetir), mientras que las penalizaciones evitan movimientos bruscos, inclinaciones peligrosas y el uso excesivo de motores.
-##Correr un agente aleatorio para 100
-import gymnasium as gym
 
-# Crear entorno
-env = gym.make("LunarLander-v3")
-
-# Inicializar episodio
-obs, info = env.reset(seed=42)
-
-for step in range(100):
-    # Acción aleatoria
-    action = env.action_space.sample()
-
-    # Ejecutar acción
-    obs, reward, terminated, truncated, info = env.step(action)
-
-    print(f"Step: {step+1}")
-    print(f"Acción: {action}")
-    print(f"Reward: {reward:.2f}")
-    print(f"Estado: {obs}")
-    print("-" * 50)
-
-    # Reiniciar si termina el episodio
-    if terminated or truncated:
-        print("Episodio terminado. Reiniciando...")
-        obs, info = env.reset()
-
-env.close()
 ## ¿Por qué no se apilan frames (el vector ya incluye velocidades).?
 El estado actual tiene toda l ainformación necesaria para la toma de decisiones, el estado tiene toda la información.
 
@@ -227,3 +190,4 @@ El agente debe tener en cuenta todas las observaciones:
 - contacto de las patas
 
 Por ello es mucho más complejo que entornos como CartPole
+"""
