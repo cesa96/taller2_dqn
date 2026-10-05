@@ -56,7 +56,7 @@ recompensa final positiva y un choque una penalización final. Por ello, no bast
 con maximizar una recompensa puntual: se busca aterrizar de forma controlada y
 con poco gasto de combustible.
 
-# Componentes de la recompensa
+## Componentes de la recompensa
 
 - El módulo recibe puntos cuando se mueve hacia el centro de la zona de aterrizaje.
 - Pierde puntos si se aleja de ese objetivo.
@@ -65,7 +65,7 @@ con poco gasto de combustible.
 - Inclinaciones fuertes generan penalizaciones.
 - Encender los motores gasta combustible y siempre genera una penalización.
 
-#Recompensas y penalizaciones principales
+# Recompensas y penalizaciones principales
 
 | Evento | Recompensa |
 |----------|------------|
