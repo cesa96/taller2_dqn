@@ -85,6 +85,15 @@ La política óptima debe:
 4. Usar el combustible con moderación.
 5. Aterrizar suavemente sin chocar.
 
+## Interpretación en Reinforcement Learning
+
+La recompensa funciona como una guía que le dice al agente qué acciones lo acercan a un aterrizaje correcto y cuáles lo alejan de él.
+Las recompensas positivas refuerzan comportamientos seguros y controlados (rutas que puede repetir), mientras que las penalizaciones evitan movimientos bruscos, inclinaciones peligrosas y el uso excesivo de motores.
+
+## ¿Por qué no se apilan frames (el vector ya incluye velocidades).?
+El estado actual tiene toda la información necesaria para la toma de decisiones, por esta razón no se apilan frames, no se hace procesamiento visual.
+
+
 ## 3. Flujo lógico previsto para el entrenamiento
 
 
@@ -101,6 +110,54 @@ La política óptima debe:
   ejecutar una futura implementación del entrenamiento, se debe instalar
   `gymnasium[box2d]` además de las dependencias de PyTorch y las herramientas
   de registro/gráficas que se utilicen.
+
+* Espacio de estados continuo
+
+Existen prácticamente infinitos estados posibles. Por esta razón, algoritmos tabulares como Q-Learning puro no escalan bien sin discretización, el estado está compuesto por variables continuas:
+Posición (x, y)
+Velocidad (vx, vy)
+Ángulo
+Velocidad angular
+Contacto de las patas
+ 
+* Problema de control dinámico
+El agente no sólo debe decidir qué hacer, sino cuándo hacerlo, por ejemplo cuando al encender demasiado el motor principal genera inestabilidad.
+Las acciones tienen efectos que se propagan durante varios pasos del tiempo.
+
+* Recompensa densa  
+A diferencia de otros entornos donde la recompensa sólo aparece al final, LunarLander proporciona retroalimentación continua:
+    -    acercarse al objetivo
+    -    reducir velocidad
+    -    mantenerse vertical
+    -    tocar el suelo con las patas
+    -    Optimización multiobjetivo
+
+El agente debe optimizar varios aspectos simultáneamente:
+    -   Llegar a la plataforma.
+    -   Reducir velocidad.
+    -   Mantener estabilidad.
+    -   Ahorrar combustible.
+    -   Evitar colisiones.
+
+Muchas veces estos objetivos entran en conflicto al estabilizarse o ahorrar combustible.
+El agente debe encontrar un equilibrio.
+
+* * Alta dependencia temporal
+Una acción puede afectar el resultado muchos pasos después.
+* *  Física realista (Box2D)
+El entorno está construido sobre Box2D.
+
+El agente debe tener en cuenta todas las observaciones:
+
+- gravedad
+- aceleración
+- momento angular
+- velocidad lineal
+- colisiones
+- contacto de las patas
+
+Por ello es mucho más complejo que entornos como CartPole
+  
 ## 5. Explicación de la red neuronal
 
 
