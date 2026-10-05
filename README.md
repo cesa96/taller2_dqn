@@ -65,7 +65,7 @@ con poco gasto de combustible.
 - Inclinaciones fuertes generan penalizaciones.
 - Encender los motores gasta combustible y siempre genera una penalización.
 
-# Recompensas y penalizaciones principales
+## Recompensas y penalizaciones principales
 
 | Evento | Recompensa |
 |----------|------------|
@@ -75,7 +75,7 @@ con poco gasto de combustible.
 | Aterrizaje exitoso | +100 |
 | Colisión o destrucción | -100 |
 
-##Objetivo del agente
+## Objetivo del agente
 
 La política óptima debe:
 
