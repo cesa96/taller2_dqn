@@ -159,7 +159,7 @@ El agente debe tener en cuenta todas las observaciones:
 Por ello es mucho más complejo que entornos como CartPole
   
 ## 5. Explicación de la red neuronal
-La red (`src/network.py`, clase `QNetwork`) recibe el estado del módulo lunar (8 números) y devuelve un Q-valor por cada acción (4 números). El agente elige la acción con el Q-valor más alto.
+La red (src/network.py, clase QNetwork) recibe el estado del módulo lunar (8 números) y devuelve un Q-valor por cada acción (4 números). El agente elige la acción con el Q-valor más alto.
 
 ### Arquitectura capa por capa
 
@@ -167,12 +167,12 @@ Es un perceptrón multicapa (MLP) 8 → 128 → 128 → 4:
 
 | Capa | Entrada | Neuronas | Activación | Salida | Parámetros |
 |------|---------|----------|------------|--------|------------|
-| Oculta 1 | 8 (estado) | 128 | ReLU | 128 | 8 × 128 + 128 = 1 152 |
-| Oculta 2 | 128 | 128 | ReLU | 128 | 128 × 128 + 128 = 16 512 |
+| Oculta 1 | 8 (estado) | 128 | ReLU | 128 | 8 × 128 + 128 = 1152 |
+| Oculta 2 | 128 | 128 | ReLU | 128 | 128 × 128 + 128 = 16512 |
 | Salida | 128 | 4 | Ninguna (lineal) | 4 Q-valores, uno por acción | 128 × 4 + 4 = 516 |
-| **Total** | | | | | **18 180** |
+| Total | | | | | 18180 |
 
-Cada capa tiene un peso por cada conexión entre una entrada y una salida (entradas × salidas), más un sesgo por cada neurona de salida. En total la red tiene **18 180 parámetros entrenables**, valor que coincide con el que calcula PyTorch. Cerca del 91 % está en la segunda capa oculta, porque es la única que conecta 128 neuronas con otras 128.
+Cada capa tiene un peso por cada conexión entre una entrada y una salida (entradas × salidas), más un sesgo por cada neurona de salida. En total la red tiene 18180 parámetros entrenables, valor que coincide con el que calcula PyTorch. Cerca del 91 % está en la segunda capa oculta, porque es la única que conecta 128 neuronas con otras 128.
 
 ### Justificación del diseño
 
@@ -186,7 +186,7 @@ La última capa no tiene activación porque los Q-valores son retornos esperados
 
 ### Replay buffer
 
-El buffer (`src/replay_buffer.py`, clase `ReplayBuffer`) guarda las transiciones (s, a, r, s′, done) y devuelve lotes aleatorios para entrenar la red. Está hecho con arreglos de NumPy que se crean desde el inicio y funcionan como un buffer circular: cuando se llena, lo nuevo sobrescribe lo más antiguo.
+El buffer (src/replay_buffer.py, clase ReplayBuffer) guarda las transiciones (s, a, r, s′, done) y devuelve lotes aleatorios para entrenar la red. Está hecho con arreglos de NumPy que se crean desde el inicio y funcionan como un buffer circular: cuando se llena, lo nuevo sobrescribe lo más antiguo.
 
 Las transiciones se eligen al azar porque los pasos seguidos de un episodio se parecen mucho entre sí. Si la red entrenara con ellos en orden, aprendería solo de la situación más reciente y olvidaría lo aprendido en otras. Al elegirlas al azar se toman experiencias de distintos episodios y de distintos momentos del aterrizaje, y además cada transición se puede usar varias veces.
 
