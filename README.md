@@ -94,7 +94,61 @@ Las recompensas positivas refuerzan comportamientos seguros y controlados (rutas
 El estado actual tiene toda la información necesaria para la toma de decisiones, por esta razón no se apilan frames, no se hace procesamiento visual.
 
 
-## 3. Flujo lógico previsto para el entrenamiento
+## 3. Flujo lógico del entrenamiento
+
+El agente es un DQN (Deep Q-Network). Usa una red online `Q(s, a; θ)` que se entrena, y una red objetivo `Q_target` con pesos θ⁻ que se copia de la online cada 1000 pasos para que el objetivo de aprendizaje no se mueva en cada actualización.
+
+### Ecuación de actualización (Bellman)
+
+Para cada transición `(s, a, r, s′, terminated)` del lote se calcula el objetivo:
+
+$$
+y = r + \gamma \cdot \max_{a'} Q_{\text{target}}(s', a') \cdot (1 - \text{terminated})
+$$
+
+y se minimiza la pérdida de Huber entre `Q(s, a)` y `y`:
+
+$$
+L(\theta) = \text{Huber}\big(Q(s, a;\theta),\; y\big)
+$$
+
+- `γ = 0.99`, `learning_rate = 0.001` (Adam), gradientes recortados a norma 10.
+- Se usa `terminated` y no `truncated` en el factor `(1 − done)`. Ver la subsección de particularidades más abajo.
+
+### Diagrama del ciclo
+
+```mermaid
+flowchart TD
+    A[Reset del ambiente] --> B[Observar estado s]
+    B --> C{"¿Número aleatorio < ε?"}
+    C -- sí --> D[Acción aleatoria]
+    C -- no --> E["Acción = argmax Q(s, a) con la red online"]
+    D --> F["env.step(a): r, s′, terminated, truncated"]
+    E --> F
+    F --> G["Guardar (s, a, r, s′, terminated) en el replay buffer"]
+    G --> H{"¿Buffer con al menos 1000 transiciones?"}
+    H -- no --> K
+    H -- sí --> I[Muestrear lote aleatorio de 64 transiciones]
+    I --> J["Actualizar red online con la pérdida Huber contra y"]
+    J --> K{"¿Pasos totales múltiplo de 1000?"}
+    K -- sí --> L["Copiar pesos de la red online a la red objetivo"]
+    K -- no --> M
+    L --> M{"¿terminated o truncated?"}
+    M -- no --> B
+    M -- sí --> N["Registrar episodio en el CSV de logs"]
+```
+
+### Exploración ε-greedy
+
+ε decae linealmente de `1.0` a `0.05` en `100 000` pasos. Al principio el agente explora casi siempre al azar; al final actúa casi siempre según la red.
+
+### Orden de ejecución en `train.py`
+
+1. Por cada paso: elegir acción (ε-greedy), ejecutar `env.step`, guardar la transición.
+2. Si el buffer tiene al menos 1000 transiciones, muestrear un lote y actualizar la red online.
+3. Cada 1000 pasos totales, copiar la red online a la red objetivo.
+4. Al terminar el episodio, escribir una fila en el CSV con `episode, reward, epsilon, loss, steps`.
+
 
 
 ## 4. Particularidades del entorno
@@ -157,6 +211,14 @@ El agente debe tener en cuenta todas las observaciones:
 - contacto de las patas
 
 Por ello es mucho más complejo que entornos como CartPole
+
+### Particularidades del entorno y su efecto en el entrenamiento
+
+- **Terminación vs. truncamiento.** El episodio termina (`terminated = True`) si el módulo aterriza, choca o sale de la zona de vuelo. Se trunca (`truncated = True`) si se llega al límite de pasos. En el primer caso el futuro no tiene valor, así que el objetivo es solo `r`. En el segundo el módulo seguía en el aire y el futuro sí tiene valor, así que el objetivo debe incluir `γ · max Q_target(s′, a′)`. Si se usara `truncated` en el factor `(1 − done)`, el agente aprendería que los estados donde se corta el episodio no valen nada, lo que introduce un sesgo.
+- **Límite de 500 pasos.** El ambiente trae 1000 pasos por defecto. `train.py` lo fija en 500 (`max_steps_per_episode` del config). Un agente que se queda flotando sin aterrizar termina truncado, y no debe confundirse con un aterrizaje.
+- **Recompensas negativas al inicio.** Con ε alto el agente choca o gasta motor sin control, y los episodios acumulan penalizaciones grandes (−100 por choque, −0.3 por paso con el motor principal). En la corrida de prueba de 30 episodios las recompensas estuvieron entre −90 y −350. Esto es esperado; el aprendizaje debe reflejarse en la curva de recompensa a lo largo de los episodios, no en el primero.
+- **Combustible como penalización constante.** Encender el motor cuesta siempre, mientras que el aterrizaje solo da recompensa al final. El agente puede aprender a no encender motores para evitar penalizaciones, pero entonces cae. Equilibrar esto es parte del problema que mide la curva de aprendizaje.
+- **Acciones discretas (4).** Se puede usar DQN directamente, porque el máximo sobre acciones es exacto. Para acciones continuas habría que usar otro algoritmo.
 
 ## 5. Explicación de la red neuronal
 La red (src/network.py, clase QNetwork) recibe el estado del módulo lunar (8 números) y devuelve un Q-valor por cada acción (4 números). El agente elige la acción con el Q-valor más alto.
