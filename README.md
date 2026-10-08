@@ -40,9 +40,10 @@ observaciones numéricas y un conjunto discreto de acciones.
 
 ### Observaciones
 
-El espacio de observación es un vector continuo de 8 valores:
+El espacio de observación es `Box(8,)` con dtype `float32`: un vector continuo de 8 valores. Gymnasium ya entrega las posiciones y velocidades escaladas a rangos pequeños, por lo que no se aplica normalización adicional; el vector se pasa directo a la red como tensor `float32` de forma `(8,)` (o `(batch, 8)` al entrenar).
 
-## Tabla de observaciones
+
+#### Tabla de observaciones
 
 | Variable | Significado | Rango aproximado | Tipo |
 |-----------|-------------|------------------|------|
@@ -57,7 +58,7 @@ El espacio de observación es un vector continuo de 8 valores:
 
 ### Acciones
 
-El espacio es `Discrete(4)`. Cada acción selecciona una de estas opciones:
+El espacio es `Discrete(4)`: una sola acción por paso, representada como un entero (`int64`) de 0 a 3. Cada acción selecciona una de estas opciones:
 
 | Acción | Efecto |
 | --- | --- |
