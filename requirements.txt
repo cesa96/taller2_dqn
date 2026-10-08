@@ -1,4 +1,7 @@
-gymnasium[classic-control]==1.1.1
+gymnasium==1.1.1
+Box2D==2.3.10
+pygame==2.6.1
+pandas==2.3.3
 imageio==2.37.0
 matplotlib==3.10.3
 numpy==2.2.6

@@ -2,13 +2,32 @@
 
 ## Estado actual del proyecto
 
-El ambiente seleccionado para la actividad es `LunarLander-v3` de Gymnasium.
-Por ahora, los métodos Python son esqueletos: **solo registran el nombre del
-método y la fecha/hora de llamada** en `results/method_calls.csv`. Todavía no
-crean el ambiente, entrenan ni evalúan un agente, ni generan resultados de
-aprendizaje. Las secciones sobre red y flujo describen el diseño previsto; los
-resultados y reflexiones basados en datos quedan pendientes de ejecutar el
-entrenamiento.
+El ambiente seleccionado es `LunarLander-v3` de Gymnasium. El agente DQN está implementado y entrenado:
+
+- `train.py` entrena el agente y guarda los logs (`results/run_<semilla>.csv`), el mejor modelo y el modelo final (`.pt`).
+- Los hiperparámetros finales están en `config.yaml` y se eligieron con el barrido de la sección 5.1.
+- Los modelos entrenados con las semillas 42, 7 y 123 están en `models/`. El mejor es `models/best_seed7.pt`.
+- Los logs de todos los experimentos están en `experiments/logs/`.
+
+### Instalación y reproducibilidad
+
+Requiere Python 3.10 o superior.
+
+```bash
+git clone https://github.com/cesa96/taller2_dqn.git
+cd taller2_dqn
+python -m venv .venv
+source .venv/bin/activate        # En Windows: .venv\Scripts\activate
+pip install -r requirements.txt
+```
+
+Para entrenar con la configuración final (cada corrida tarda unos 20 minutos en CPU):
+
+```bash
+python train.py --seed 7         # repetir con --seed 42 y --seed 123
+```
+
+Con la misma semilla, el entrenamiento produce exactamente los mismos resultados: se fijan las semillas de Python, NumPy, PyTorch, el ambiente y el replay buffer, y PyTorch usa un solo hilo.
 
 ## 1. Descripción del ambiente
 
@@ -43,8 +62,8 @@ El espacio es `Discrete(4)`. Cada acción selecciona una de estas opciones:
 | Acción | Efecto |
 | --- | --- |
 | 0 | No encender motores |
-| 1 | Encender el motor principal |
-| 2 | Encender el motor lateral izquierdo |
+| 1 | Encender el motor lateral izquierdo |
+| 2 | Encender el motor principal |
 | 3 | Encender el motor lateral derecho |
 
 ### Recompensa
@@ -96,7 +115,7 @@ El estado actual tiene toda la información necesaria para la toma de decisiones
 
 ## 3. Flujo lógico del entrenamiento
 
-El agente es un DQN (Deep Q-Network). Usa una red online `Q(s, a; θ)` que se entrena, y una red objetivo `Q_target` con pesos θ⁻ que se copia de la online cada 1000 pasos para que el objetivo de aprendizaje no se mueva en cada actualización.
+El agente es un DQN (Deep Q-Network). Usa una red online `Q(s, a; θ)` que se entrena, y una red objetivo `Q_target` con pesos θ⁻ que se copia de la online cada 250 pasos para que el objetivo de aprendizaje no se mueva en cada actualización.
 
 ### Ecuación de actualización (Bellman)
 
@@ -112,7 +131,7 @@ $$
 L(\theta) = \text{Huber}\big(Q(s, a;\theta),\; y\big)
 $$
 
-- `γ = 0.99`, `learning_rate = 0.001` (Adam), gradientes recortados a norma 10.
+- `γ = 0.99`, `learning_rate = 0.0005` (Adam), gradientes recortados a norma 10.
 - Se usa `terminated` y no `truncated` en el factor `(1 − done)`. Ver la subsección de particularidades más abajo.
 
 ### Diagrama del ciclo
@@ -130,7 +149,7 @@ flowchart TD
     H -- no --> K
     H -- sí --> I[Muestrear lote aleatorio de 64 transiciones]
     I --> J["Actualizar red online con la pérdida Huber contra y"]
-    J --> K{"¿Pasos totales múltiplo de 1000?"}
+    J --> K{"¿Pasos totales múltiplo de 250?"}
     K -- sí --> L["Copiar pesos de la red online a la red objetivo"]
     K -- no --> M
     L --> M{"¿terminated o truncated?"}
@@ -140,13 +159,13 @@ flowchart TD
 
 ### Exploración ε-greedy
 
-ε decae linealmente de `1.0` a `0.05` en `100 000` pasos. Al principio el agente explora casi siempre al azar; al final actúa casi siempre según la red.
+ε decae linealmente de `1.0` a `0.05` en `50 000` pasos. Al principio el agente explora casi siempre al azar; al final actúa casi siempre según la red.
 
 ### Orden de ejecución en `train.py`
 
 1. Por cada paso: elegir acción (ε-greedy), ejecutar `env.step`, guardar la transición.
 2. Si el buffer tiene al menos 1000 transiciones, muestrear un lote y actualizar la red online.
-3. Cada 1000 pasos totales, copiar la red online a la red objetivo.
+3. Cada 250 pasos totales, copiar la red online a la red objetivo.
 4. Al terminar el episodio, escribir una fila en el CSV con `episode, reward, epsilon, loss, steps`.
 
 
@@ -160,10 +179,10 @@ flowchart TD
 - Es importante distinguir entre aterrizaje seguro, choque y truncamiento por
   límite de tiempo: terminar por tiempo no necesariamente significa que el
   módulo haya aterrizado.
-- Gymnasium requiere la dependencia de Box2D para este entorno. Antes de
-  ejecutar una futura implementación del entrenamiento, se debe instalar
-  `gymnasium[box2d]` además de las dependencias de PyTorch y las herramientas
-  de registro/gráficas que se utilicen.
+- Gymnasium requiere Box2D (el motor de física) y pygame para este entorno.
+  Ambos están en `requirements.txt`. Se usa el paquete `Box2D` y no
+  `box2d-py`, porque este último necesita compilarse y falla en muchos
+  computadores (ver `docs/bitacora.md`).
 
 * Espacio de estados continuo
 
