@@ -9,11 +9,11 @@ training:
   min_replay_size: 1000
   batch_size: 64
   gamma: 0.99
-  learning_rate: 0.001
-  target_update_interval: 1000
+  learning_rate: 0.0005
+  target_update_interval: 250
   epsilon_start: 1.0
   epsilon_end: 0.05
-  epsilon_decay_steps: 100000
+  epsilon_decay_steps: 50000
   gradient_clip: 10.0
   hidden_dims: [128, 128]
   device: auto

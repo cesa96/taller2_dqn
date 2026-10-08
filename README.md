@@ -256,11 +256,127 @@ El buffer tiene un tamaño fijo y es circular para que el agente entrene con exp
 
 El buffer guarda como señal de fin el valor terminated y no truncated. Si el módulo aterrizó o chocó, el episodio terminó de verdad y no hay recompensas futuras que sumar. En cambio, si el episodio se cortó por el límite de pasos, el módulo seguía volando y lo que venía después sí tenía valor. El buffer tiene su propia semilla para que los lotes elegidos sean los mismos cada vez que se repite el experimento.
 
+### Hiperparámetros
+
+Valores finales de `config.yaml`, elegidos con el barrido de hiperparámetros descrito en la sección 5.1. Los que se cambiaron respecto al primer `config.yaml` están marcados con ★.
+
+| Hiperparámetro | Valor | Razón |
+|---|---|---|
+| `episodes` | 1000 | En el barrido de 600 episodios la curva seguía subiendo, así que hacía falta más entrenamiento. Con 1000, la semilla 7 resuelve el ambiente en el episodio 651. |
+| `max_steps_per_episode` | 500 | Lo fijó P4 (la mitad del límite del ambiente) para que un agente que se queda flotando no gaste 1000 pasos por episodio. |
+| `replay_capacity` | 100 000 | Una corrida completa genera unas 280 000 transiciones, así que el buffer guarda aproximadamente los últimos 300 episodios: suficientes para mezclar choques y aterrizajes sin entrenar con experiencias de una política muy vieja. |
+| `min_replay_size` | 1000 | Se espera a tener unos 10 episodios de datos antes de entrenar, para que los primeros lotes no salgan siempre de las mismas pocas transiciones. |
+| `batch_size` | 64 | Con 128 la curva llegó a un máximo parecido (190.9), pero cayó a 151.4 al final y cada actualización cuesta el doble. 64 fue más estable. |
+| `gamma` (γ) | 0.99 | Horizonte efectivo de ~100 pasos, suficiente para "ver" el +100 del aterrizaje. Con γ = 0.95 (horizonte ~20 pasos) el agente aprendió a quedarse flotando: 28 de 30 episodios terminaron por tiempo. |
+| `learning_rate` ★ | 0.0005 | Con 0.001 la media de los últimos 100 episodios fue 167.7; con 0.0005 subió a 192.8. Pasos más pequeños hacen que los Q-valores oscilen menos. |
+| `target_update_interval` ★ | 250 | Copiar la red objetivo cada 250 pasos en vez de cada 1000 dio el mejor resultado del barrido (195.9 frente a 167.7). Con 1000 el objetivo queda demasiado desactualizado cuando la política cambia rápido. |
+| `epsilon_start` | 1.0 | Al inicio la red no sabe nada; explorar al 100 % llena el buffer con experiencias variadas. |
+| `epsilon_end` | 0.05 | Mantiene un 5 % de acciones aleatorias para seguir descubriendo situaciones. |
+| `epsilon_decay_steps` ★ | 50 000 | **El cambio más importante.** ε decae por pasos, pero al principio los episodios duran ~100 pasos porque el módulo choca rápido. Con 100 000 pasos, después de 500 episodios ε seguía en 0.51. Con 25 000 el agente dejó de explorar demasiado pronto: llegó a 129 y luego cayó a 38. |
+| `gradient_clip` | 10.0 | Las recompensas de ±100 producen errores de Bellman grandes; recortar el gradiente evita actualizaciones bruscas. No se varió. |
+| `hidden_dims` | [128, 128] | Arquitectura de P3 (ver arriba). No se varió para concentrar el tiempo de cómputo en los hiperparámetros de DQN. |
+
+
+## 5.1 Experimentos de hiperparámetros
+
+### Metodología
+
+- Se cambió **un hiperparámetro a la vez** respecto a una configuración base, con la semilla 42, y se comparó la **media de la recompensa en los últimos 100 episodios**.
+- Todo se corrió en CPU (2 núcleos) con `train.py`, que ahora acepta `--set clave=valor` para sobrescribir hiperparámetros sin editar `config.yaml`, y `--tag` para nombrar los archivos de cada experimento. Por ejemplo:
+
+  ```bash
+  python train.py --episodes 600 --seed 42 --tag f2_lr5e-4 --out-dir results/barrido \
+      --set epsilon_decay_steps=50000 learning_rate=0.0005
+  ```
+
+- Los CSV de todos los experimentos están en `experiments/logs/`. La tabla de resumen se genera con `python experiments/resumen_barrido.py <carpeta>` y las gráficas con `python experiments/graficas_barrido.py experiments/logs/fase2 experiments/logs/final`.
+
+### Fase 1: barrido sobre el `config.yaml` original (500 episodios)
+
+| Experimento | Media últimos 100 ep. | ε al final |
+|---|---|---|
+| ε decae en 50 000 pasos | **127.4** | 0.05 |
+| γ = 0.95 | −19.9 | 0.38 |
+| Target cada 250 pasos | −35.2 | 0.50 |
+| Base (config original) | −38.2 | 0.51 |
+| Buffer de 20 000 | −41.1 | 0.51 |
+| Batch 128 | −45.2 | 0.53 |
+| lr 0.0005 | −48.8 | 0.52 |
+| lr 0.0001 | −49.3 | 0.50 |
+
+**Configuración que falló y por qué:** la base original nunca dejó de explorar. Con `epsilon_decay_steps = 100 000` y episodios de ~100 pasos, en 500 episodios solo se dieron ~51 000 pasos y ε seguía en 0.51: el agente tomaba acciones al azar la mitad del tiempo. Por eso todas las variaciones que no tocaban ε quedaron entre −50 y −20 (γ = 0.95 da episodios más largos porque el agente flota, por eso su ε bajó un poco más, a 0.38), y la comparación entre ellas no era justa. La fase 2 se hizo con ε en 50 000 pasos como nueva base.
+
+### Fase 2: barrido sobre la nueva base, ε en 50 000 pasos (600 episodios)
+
+| Experimento | Media últimos 100 ep. | Mejor media móvil (100) | Resultado |
+|---|---|---|---|
+| Target cada 250 pasos | **195.9** | 195.9 | Mejor resultado |
+| lr 0.0005 | 192.8 | 192.8 | Segundo mejor |
+| Batch 128 | 151.4 | 190.9 | Llega alto pero se vuelve inestable al final |
+| Base (ε en 50k) | 167.7 | 168.8 | Aprende de forma estable pero más lento |
+| ε en 25 000 pasos | 38.3 | 128.9 | **Falló:** aprende rápido y luego colapsa |
+| γ = 0.95 | −0.6 | 1.0 | **Falló:** el agente aprende a flotar |
+
+![Barrido fase 2](experiments/figuras/barrido_fase2.png)
+
+**Configuraciones que fallaron y por qué:**
+
+- **ε en 25 000 pasos.** Es la curva que más rápido sube (llega a 129 en el episodio 343), pero después cae hasta 38. El agente dejó de explorar cuando su política todavía era mala, y el buffer se llenó de experiencias de esa política. Al evaluarlo sin exploración, el 37 % de los episodios terminó en choque.
+- **γ = 0.95.** Con γ = 0.95 una recompensa a 50 pasos vale solo 0.95⁵⁰ ≈ 0.08 de su valor, así que el +100 del aterrizaje casi no influye en los Q-valores, mientras que el −100 del choque sí está cerca. El agente aprendió a evitar el choque encendiendo el motor principal (57 % de las acciones) y quedándose en el aire: en 28 de 30 episodios de evaluación se acabó el tiempo sin aterrizar.
+
+### Configuración final y entrenamiento con 3 semillas
+
+Se combinaron los dos mejores cambios de la fase 2 (lr 0.0005 y target cada 250) con ε en 50 000 pasos, y se entrenó 1000 episodios con las semillas 42, 7 y 123:
+
+```bash
+python train.py --seed 42
+python train.py --seed 7
+python train.py --seed 123
+```
+
+Cada modelo se evaluó después con `experiments/analisis_politica.py`: 100 episodios con política greedy (ε = 0) y semillas de ambiente distintas a las de entrenamiento (1000–1099). Esta evaluación es de apoyo para el análisis de hiperparámetros; la evaluación oficial del agente está en la sección 6.
+
+| Semilla | Media últimos 100 ep. (entrenamiento) | Mejor media móvil (100) | Evaluación greedy (100 ep.) | Ep. ≥ 200 | Aterriza | Choca | Se acaba el tiempo |
+|---|---|---|---|---|---|---|---|
+| 7 | 248.0 | **255.6** (ep. 977), resuelto en ep. 651 | **230.9 ± 52.5** | 64 % | 64 % | 0 % | 36 % |
+| 42 | 139.5 | 139.5 (ep. 1000) | 201.0 ± 98.6 | 68 % | 76 % | 13 % | 11 % |
+| 123 | 91.2 | 191.1 (ep. 581) | 133.5 ± 102.7 | 37 % | 37 % | 51 % | 12 % |
+| **Promedio** | 159.6 | 195.4 | **188.5** | 56 % | 59 % | 21 % | 20 % |
+| Agente aleatorio | — | — | −205.9 ± 118.6 | 0 % | 0 % | 100 % | 0 % |
+
+![Curvas de las 3 semillas](experiments/figuras/semillas_final.png)
+
+- El mejor modelo es el de la **semilla 7** (`models/best_seed7.pt`): nunca choca en la evaluación. Los modelos de las otras semillas están en `models/best_seed42.pt` y `models/best_seed123.pt`.
+- Cada `.pt` es el punto del entrenamiento con mejor media móvil de 100 episodios, y guarda los pesos (`state_dict`), el episodio, esa media y la configuración usada.
+
 ## 6. Resultados del entrenamiento
 
 
 ## 7. Reflexión sobre los resultados obtenidos
 
+**El agente sí aprende a aterrizar, pero no de forma igual de confiable con todas las semillas.** En promedio, los modelos de las 3 semillas obtienen 188.5 puntos en evaluación greedy, frente a −205.9 del agente aleatorio, que choca en el 100 % de los episodios. La semilla 7 resuelve el ambiente (media móvil ≥ 200 desde el episodio 651) y nunca choca al evaluarla. La semilla 123, en cambio, llegó a 191 cerca del episodio 580 y luego bajó a 91, y su mejor modelo todavía choca en la mitad de los episodios. Con el mismo código y los mismos hiperparámetros, la diferencia entre la mejor y la peor semilla es de casi 100 puntos. Por eso no basta con reportar una sola corrida.
+
+**Los colapsos durante el entrenamiento son una limitación estructural de DQN.** La semilla 42 bajó de 105 a −13 entre los episodios 513 y 612, y se recuperó después; la 123 cayó al final. Hay tres causas que se refuerzan entre sí:
+
+- **Sobreestimación de los Q-valores.** El objetivo de Bellman usa `max_a' Q_target(s′, a′)`, y el máximo de valores con ruido tiende a ser mayor que el valor real. El agente sobrevalora algunas acciones arriesgadas hasta que choca varias veces y lo corrige. Double DQN separa la elección de la acción de su evaluación para reducir este sesgo.
+- **Olvido de experiencias.** Cuando el agente ya aterriza bien, el buffer (que guarda unos 300 episodios) se llena de aterrizajes, y las transiciones de choques salen del buffer. La red "olvida" qué pasa en estados peligrosos y vuelve a cometer errores que ya había corregido.
+- **Objetivo que se mueve.** La red objetivo se copia cada 250 pasos. Esto aceleró el aprendizaje en el barrido, pero también hace que el objetivo cambie seguido, y con un learning rate constante la política puede oscilar en vez de estabilizarse.
+
+**El comportamiento aprendido se explica por el diseño del problema:**
+
+- **Aterriza pero no se detiene.** En la semilla 7, el 36 % de los episodios terminan por tiempo, pero todos con recompensa positiva (mínimo 116.5). El módulo llega a la plataforma y sigue corrigiendo con los motores laterales, así que nunca queda en reposo (que es lo que da el +100 y termina el episodio) y el episodio se corta en el paso 500. Esto pasa porque estar apoyado en la plataforma ya da recompensa con cada paso (+10 por cada pata y el bonus por estar cerca del centro), así que el agente no tiene mucho incentivo para apagar los motores. Además, el límite de 500 pasos que se puso en `train.py` le deja menos tiempo para aprender a quedarse quieto.
+- **γ define qué tan lejos "ve" el agente.** El experimento con γ = 0.95 lo mostró claramente: con un horizonte de ~20 pasos, el aterrizaje (que está a cientos de pasos) no influye en la decisión, y el agente prefiere quedarse flotando para evitar el choque. La recompensa no cambió; lo que cambió fue cómo el agente la valora en el tiempo.
+- **ε por pasos y episodios de largo variable.** El calendario de ε se define en pasos, pero los episodios cambian de largo según qué tan bien juega el agente (~90 pasos cuando choca, 250–500 cuando aterriza o flota). Con 100 000 pasos el agente seguía explorando a la mitad del entrenamiento; con 25 000 dejó de explorar antes de tiempo. Elegir este valor exige pensar en cuántos episodios cortos va a tener el agente al principio, no solo en el total de pasos.
+
+**Las métricas de entrenamiento subestiman al agente.** La media de entrenamiento incluye el 5 % de acciones aleatorias que quedan con ε = 0.05. Por ejemplo, la semilla 42 tiene 139.5 de media en entrenamiento pero 201.0 en evaluación greedy. Por eso hay que evaluar sin exploración antes de concluir algo sobre la política aprendida.
+
+**Limitaciones del propio estudio de hiperparámetros.** Cada configuración del barrido se corrió con una sola semilla, y ya vimos que la semilla cambia el resultado hasta en 100 puntos. Por eso las diferencias pequeñas del barrido (por ejemplo, 195.9 frente a 192.8) no son concluyentes. Además, la combinación final (lr 0.0005 + target 250) no se probó antes de entrenar con 3 semillas, y con la semilla 42 dio 139.5, menos que cualquiera de los dos cambios por separado en la fase 2. Para mejorar los resultados se podría:
+
+1. Usar Double DQN o Dueling DQN para reducir la sobreestimación.
+2. Actualizar la red objetivo de forma suave (promedio de pesos) en lugar de copiarla cada 250 pasos.
+3. Reducir el learning rate al final del entrenamiento.
+4. Evaluar con ε = 0 cada cierto número de episodios y guardar el modelo según esa evaluación, no según la media de entrenamiento.
+5. Correr cada configuración del barrido con al menos 3 semillas.
 
 ## 8. Reflexión sobre los principales retos o dificultades
 
