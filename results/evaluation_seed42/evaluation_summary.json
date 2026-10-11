@@ -1,0 +1,128 @@
+{
+  "schema_version": 1,
+  "created_utc": "2026-10-11T02:02:12.187412+00:00",
+  "command": [
+    "C:\\Users\\camil\\Documents\\Codex\\2026-10-10\\de\\work\\venv\\Scripts\\python.exe",
+    "outputs/taller2_dqn/evaluate.py",
+    "--model",
+    "outputs/taller2_dqn/models/best_seed42.pt",
+    "--out-dir",
+    "outputs/taller2_dqn/results/evaluation_seed42"
+  ],
+  "environment": {
+    "id": "LunarLander-v3",
+    "max_episode_steps": 500
+  },
+  "protocol": {
+    "episodes_per_policy": 100,
+    "first_environment_seed": 20000,
+    "last_environment_seed": 20099,
+    "epsilon": 0.0,
+    "policy": "argmax Q, first index breaks ties",
+    "baseline": "uniform independent actions from numpy.default_rng(seed)",
+    "baseline_rng_seed": 20000,
+    "paired_reset_seeds": true,
+    "device": "cpu",
+    "torch_num_threads": 1,
+    "torch_deterministic_algorithms": true,
+    "gradient_tracking": false,
+    "network_training_mode": false,
+    "landing_definition": "terminated and terminal reward +100, independent of total episode reward",
+    "reward_threshold": 200.0,
+    "std_ddof": 0
+  },
+  "checkpoint": {
+    "filename": "best_seed42.pt",
+    "sha256": "8120e9d196dac8c133eec89fc44e366f64ad235f37d077dba29083f75a04beb9",
+    "training_seed": 42,
+    "episode": 1000,
+    "avg100": 139.52538832095465,
+    "config": {
+      "episodes": 1000,
+      "max_steps_per_episode": 500,
+      "replay_capacity": 100000,
+      "min_replay_size": 1000,
+      "batch_size": 64,
+      "gamma": 0.99,
+      "learning_rate": 0.0005,
+      "target_update_interval": 250,
+      "epsilon_start": 1.0,
+      "epsilon_end": 0.05,
+      "epsilon_decay_steps": 50000,
+      "gradient_clip": 10.0,
+      "hidden_dims": [
+        128,
+        128
+      ],
+      "device": "auto"
+    }
+  },
+  "versions": {
+    "python": "3.12.10",
+    "gymnasium": "1.1.1",
+    "numpy": "2.2.6",
+    "torch": "2.7.1",
+    "Box2D": "2.3.10",
+    "pygame": "2.6.1",
+    "imageio": "2.37.0",
+    "Pillow": "12.3.0"
+  },
+  "platform": "Windows-11-10.0.26200-SP0",
+  "evaluation": {
+    "episodes": 100,
+    "reward_mean": 173.2365653317371,
+    "reward_std": 109.91105561498036,
+    "reward_std_ddof": 0,
+    "reward_min": -359.325090230599,
+    "reward_max": 316.4835739070607,
+    "reward_median": 202.90756695938973,
+    "episodes_reward_ge_200": 53,
+    "fraction_reward_ge_200": 0.53,
+    "mean_steps": 270.36,
+    "outcomes": {
+      "landed": 64,
+      "crash_or_out_of_bounds": 23,
+      "time_limit": 13
+    },
+    "action_counts": {
+      "0": 8636,
+      "1": 4566,
+      "2": 9290,
+      "3": 4544
+    }
+  },
+  "random_baseline": {
+    "episodes": 100,
+    "reward_mean": -170.39405569711653,
+    "reward_std": 97.74138234135704,
+    "reward_std_ddof": 0,
+    "reward_min": -463.0384461543507,
+    "reward_max": 0.007526829517018996,
+    "reward_median": -143.8708945663377,
+    "episodes_reward_ge_200": 0,
+    "fraction_reward_ge_200": 0.0,
+    "mean_steps": 89.82,
+    "outcomes": {
+      "landed": 0,
+      "crash_or_out_of_bounds": 100,
+      "time_limit": 0
+    },
+    "action_counts": {
+      "0": 2237,
+      "1": 2237,
+      "2": 2227,
+      "3": 2281
+    }
+  },
+  "comparison": {
+    "mean_reward_difference": 343.6306210288536,
+    "paired_difference_std": 144.7995948573368,
+    "episodes_greedy_better_than_random": 98,
+    "note": "Diferencia absoluta; no se usan cocientes con recompensas negativas."
+  },
+  "artifacts": {
+    "evaluation_episodes": "evaluation_episodes.csv",
+    "random_baseline_episodes": "random_baseline_episodes.csv"
+  },
+  "gif": null
+}
