@@ -1,5 +1,13 @@
 # Taller 2: agente DQN para LunarLander-v3
+## Integrantes
 
+- Sabrina Miranda
+- Maria Paula Arciniegas
+- Cesar Camilo Rojas
+- Camilo Briceño
+- Cesar Garcia
+- Carlos Caicedo
+  
 ## Estado final del proyecto
 
 El ambiente seleccionado es `LunarLander-v3` de Gymnasium. El agente DQN está implementado y entrenado:
@@ -473,9 +481,6 @@ python experiments/plot_results.py
 # Comprobaciones del evaluador
 python -m unittest discover -s tests -v
 ```
-
-Se utilizó Python 3.12.10, Gymnasium 1.1.1, Box2D 2.3.10, PyTorch 2.7.1 en CPU, NumPy 2.2.6, pygame 2.6.1 e imageio 2.37.0. El JSON de cada evaluación registra las versiones, configuración, semillas y huella SHA-256 del modelo. El checkpoint principal tiene SHA-256 `ad7dfc3d72ed15b5f61fb8865a0aa4c2ca128982c2385d256529d922a20c53b8`. Las semillas ayudan a reproducir las corridas, pero no garantizan igualdad bit a bit entre sistemas distintos.
-
 ## 7. Conclusiones sustentadas en los resultados
 
 1. **La política principal supera ampliamente la línea base bajo este protocolo.** Su media de 239.23 frente a -170.39 representa una mejora absoluta de 409.63 puntos, y gana en 100/100 pares. No se expresa como porcentaje de mejora porque la referencia tiene recompensa negativa.
@@ -513,13 +518,5 @@ El aprendizaje colectivo documentado es que implementar DQN y demostrar qué log
 
 La integración actual del **punto 6** añade el evaluador completo, los registros nuevos de evaluación, las tres gráficas, el GIF y esta revisión de conclusiones. Los cambios no se atribuyen a una cuenta histórica del equipo: se distinguen de sus contribuciones publicadas. El reto de esta integración fue mantener separados entrenamiento, selección de modelo y evaluación, y comprobar que cada cifra tuviera un archivo de respaldo.
 
-## 9. Procedencia de esta entrega
-
-Base: [repositorio cesa96/taller2_dqn](https://github.com/cesa96/taller2_dqn), [commit 55bbe5a](https://github.com/cesa96/taller2_dqn/tree/55bbe5a13113670ae53399b38b6f0a23a7350607). Los pesos y CSV históricos se conservan sin modificaciones. La evaluación nueva se ejecutó el 10 de octubre de 2026, hora de Colombia (11 de octubre en los registros UTC).
-
-- [Procedencia y huellas de archivos fuente](docs/procedencia.json).
-- [Aportes y evidencia del historial](docs/aportes_evidencia.json).
-- [Bitácora original del equipo](docs/bitacora.md), conservada como documento histórico: algunos pendientes descritos allí ya fueron resueltos en commits posteriores.
-- [Verificación de la entrega](docs/verificacion.md).
 
 La inspección original del entorno que estaba en `evaluate.py` se conserva en [experiments/inspect_environment.py](experiments/inspect_environment.py). El nuevo `evaluate.py` cumple la función de evaluación del punto 6.
