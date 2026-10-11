@@ -1,0 +1,76 @@
+{
+  "evaluation": "100 DQN + 100 baseline rows; metrics, outcomes, seeds, limits and checkpoint hashes verified",
+  "evaluation_seed42": "100 DQN + 100 baseline rows; metrics, outcomes, seeds, limits and checkpoint hashes verified",
+  "evaluation_seed123": "100 DQN + 100 baseline rows; metrics, outcomes, seeds, limits and checkpoint hashes verified",
+  "baseline_repeated": "All three copies byte-identical; 100 unique baseline scenarios, not 300 independent samples",
+  "original_artifacts": "All checkpoint, log, train.py and config.yaml hashes match the source commit",
+  "gif": {
+    "width": 600,
+    "height": 400,
+    "encoded_frames": 154,
+    "captured_frames": 160,
+    "duration_ms": 6400,
+    "note": "GIF encoder merges repeated frames; duration retained."
+  },
+  "evaluation_tests": {
+    "unit_tests": {
+      "passed": 4,
+      "command": "python -m unittest discover -s tests -v"
+    },
+    "safe_checkpoint_loading": {
+      "weights_only": true,
+      "strict_state_dict_loading": true,
+      "training_seed": 7,
+      "episode": 977,
+      "avg100": 255.55542364651856,
+      "max_steps_per_episode": 500,
+      "hidden_dims": [
+        128,
+        128
+      ],
+      "sha256_matches_official": true
+    },
+    "first_three_greedy_render_comparison": [
+      {
+        "seed": 20000,
+        "reward_no_render": 262.19697964086265,
+        "reward_official": 262.19697964086265,
+        "exact_match": true
+      },
+      {
+        "seed": 20001,
+        "reward_no_render": 289.7992165760533,
+        "reward_official": 289.7992165760533,
+        "exact_match": true
+      },
+      {
+        "seed": 20002,
+        "reward_no_render": 258.82464729256196,
+        "reward_official": 258.82464729256196,
+        "exact_match": true
+      }
+    ],
+    "first_three_baseline_repeat": [
+      {
+        "seed": 20000,
+        "reward_no_render": -463.0384461543507,
+        "reward_official": -463.0384461543507,
+        "exact_match": true
+      },
+      {
+        "seed": 20001,
+        "reward_no_render": -438.97154246981495,
+        "reward_official": -438.97154246981495,
+        "exact_match": true
+      },
+      {
+        "seed": 20002,
+        "reward_no_render": -248.8283130867303,
+        "reward_official": -248.8283130867303,
+        "exact_match": true
+      }
+    ],
+    "no_render_frames": 0,
+    "interpretation": "Las tres primeras trayectorias coinciden exactamente sin renderizar; incluye el episodio 20000 grabado en el GIF oficial. La base aleatoria también coincide usando iguales semillas."
+  }
+}

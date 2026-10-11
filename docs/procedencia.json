@@ -1,0 +1,113 @@
+{
+  "repository": "https://github.com/cesa96/taller2_dqn",
+  "commit": "55bbe5a13113670ae53399b38b6f0a23a7350607",
+  "source_artifacts_unchanged": [
+    {
+      "path": "config.yaml",
+      "sha256": "0a2db934569fa63f98ecf528a0c428e3cc4d90dc9cd7811e991aae2b70740eff"
+    },
+    {
+      "path": "experiments/logs/fase1/resumen.csv",
+      "sha256": "a02e8c12b26b68936568f0f9c9aa22686ea3f03ae2a616916c819b33706a98b1"
+    },
+    {
+      "path": "experiments/logs/fase1/sw_base_run_42.csv",
+      "sha256": "e7f64ea92d8e6bc015b52921bf4946c3bf23f8cfb6824924c58c945808d5f287"
+    },
+    {
+      "path": "experiments/logs/fase1/sw_batch128_run_42.csv",
+      "sha256": "3e2a24d30672843ad4b80c23df6724c5c49502245af2749a01372808b250469f"
+    },
+    {
+      "path": "experiments/logs/fase1/sw_buffer20k_run_42.csv",
+      "sha256": "c1625c4f9d10390ff44a4933940b93788dbb4b6d42ad0341f45d98fd89b32c84"
+    },
+    {
+      "path": "experiments/logs/fase1/sw_epsdec50k_run_42.csv",
+      "sha256": "e8d05bddddb6c764f5a13eb93e26e2e6656ac9b29aa1ee8ee963cf1a8cda7d85"
+    },
+    {
+      "path": "experiments/logs/fase1/sw_gamma095_run_42.csv",
+      "sha256": "c24225c6f23f28c7d67e311b06469531bdd0d7e141727d351408136f0ef74590"
+    },
+    {
+      "path": "experiments/logs/fase1/sw_lr1e-4_run_42.csv",
+      "sha256": "e39b7844b7be37bdb13138c25782237cdf2cd85b09949d41e7975b54f971826f"
+    },
+    {
+      "path": "experiments/logs/fase1/sw_lr5e-4_run_42.csv",
+      "sha256": "760d643536a66579a8e04c3e10ee5950c39afab509ae16a2f6f64de65ed48edb"
+    },
+    {
+      "path": "experiments/logs/fase1/sw_target250_run_42.csv",
+      "sha256": "832aa3dadff887514c4c5a39f5fcc9ad464fb5e0408e43cbe786c47f9ff8d78d"
+    },
+    {
+      "path": "experiments/logs/fase2/f2_base_run_42.csv",
+      "sha256": "43a64b28b469421f2dc0aefde0eb6ad13008d466e723d8242c5ed54f16ff6365"
+    },
+    {
+      "path": "experiments/logs/fase2/f2_batch128_run_42.csv",
+      "sha256": "9b6a58f622012701068d1a1dfb0a7d377db26e88223fc72b8c56037d7f30fe5a"
+    },
+    {
+      "path": "experiments/logs/fase2/f2_epsdec25k_run_42.csv",
+      "sha256": "a5a160d3fed856211c24ad6356bdedaa8fa236906a2b35828b5a5873a7df3fca"
+    },
+    {
+      "path": "experiments/logs/fase2/f2_gamma095_run_42.csv",
+      "sha256": "58b9269c8531d6ee6c0a21379dbd74379272dd81c82c31fb27f7a3ef66659290"
+    },
+    {
+      "path": "experiments/logs/fase2/f2_lr5e-4_run_42.csv",
+      "sha256": "fb095433c675bdd7173affc36a6bd59c4a56d58563af48863b8076538d2835ab"
+    },
+    {
+      "path": "experiments/logs/fase2/f2_target250_run_42.csv",
+      "sha256": "dfb0a7501f606323920d1e98c4b2f1825a6d18222dce332b241edfb65ea4122c"
+    },
+    {
+      "path": "experiments/logs/fase2/resumen.csv",
+      "sha256": "6d6fb51af9860e07c76d830d6b49c9529aa23f3128a8a7bf62bda8d519156acd"
+    },
+    {
+      "path": "experiments/logs/final/resumen.csv",
+      "sha256": "76771eaf60316ef2a7b8ba4758f24b6b946a63ab91767e97c85a2fba6a31fb5d"
+    },
+    {
+      "path": "experiments/logs/final/run_123.csv",
+      "sha256": "818a721ef636dc8a2bee1a043bf6424a975f21a531c938dc6369bbe5ca5e9445"
+    },
+    {
+      "path": "experiments/logs/final/run_42.csv",
+      "sha256": "1d8eb86dee44e0f7346009e042b7223add35f5f6c9ec1081bc37cbd2e3111464"
+    },
+    {
+      "path": "experiments/logs/final/run_7.csv",
+      "sha256": "acfaf38582725db13b075a8f0aaf83bf3390fc72fd24936d28b8dcee39857a8c"
+    },
+    {
+      "path": "models/best_seed123.pt",
+      "sha256": "11532f7f32799b7d8fbd4f0647519c6116a5538f6779290b64458645ac5adc4a"
+    },
+    {
+      "path": "models/best_seed42.pt",
+      "sha256": "8120e9d196dac8c133eec89fc44e366f64ad235f37d077dba29083f75a04beb9"
+    },
+    {
+      "path": "models/best_seed7.pt",
+      "sha256": "ad7dfc3d72ed15b5f61fb8865a0aa4c2ca128982c2385d256529d922a20c53b8"
+    },
+    {
+      "path": "train.py",
+      "sha256": "8c70156e60e625cde0c977448898489193d28d8bf21a63da7f65769501b2af8a"
+    }
+  ],
+  "training": "Historical published artifacts; no retraining performed for this delivery.",
+  "evaluation": "Fresh runs with unchanged checkpoints on seeds 20000..20099, 100 episodes per policy, 500-step limit.",
+  "official_checkpoint_fixed_before_new_evaluation": "models/best_seed7.pt",
+  "previous_exploratory_environment_seeds": [
+    1000,
+    1099
+  ]
+}
